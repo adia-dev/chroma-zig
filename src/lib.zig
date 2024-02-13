@@ -55,66 +55,15 @@ pub fn format(comptime fmt: []const u8) []const u8 {
 
         const maybe_color_fmt = fmt[fmt_begin..fmt_end];
         comptime {
-            var found = false;
-
             if (std.ascii.isDigit(maybe_color_fmt[0])) {
-                var channels_value: [3]u8 = .{ 0, 0, 0 };
-                var channels_length: [3]u8 = .{ 0, 0, 0 };
-                var channel = 0;
-                for (maybe_color_fmt) |c| {
-                    switch (c) {
-                        '0'...'9' => {
-                            var res = @mulWithOverflow(channels_value[channel], 10);
-                            if (res[1] > 0) {
-                                @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
-                            }
-                            channels_value[channel] = res[0];
-
-                            res = @addWithOverflow(channels_value[channel], c - '0');
-                            if (res[1] > 0) {
-                                @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
-                            }
-                            channels_value[channel] = res[0];
-
-                            channels_length[channel] += 1;
-                        },
-                        ';' => {
-                            channel += 1;
-
-                            if (channel >= 3) {
-                                @compileError("Invalid number format, too many channels, expected: {0-255} or {0-255;0-255;0-255}");
-                            }
-                        },
-                        else => {
-                            @compileError("Invalid number format, expected: {0-255} or {0-255;0-255;0-255}");
-                        },
-                    }
-                }
-
-                // ANSI 256 extended
-                if (channel == 0) {
-                    const color: []const u8 = maybe_color_fmt[0..channels_length[0]];
+                if (parse256OrTrueColor(maybe_color_fmt)) |result| {
+                    output = output ++ result;
                     at_least_one_color = true;
-                    output = output ++ "\x1b[38;5;" ++ color ++ "m";
-                }
-                // TRUECOLOR
-                // TODO: check for compatibility, is it possible at comptime ??
-                else if (channel == 2) {
-                    var color: []const u8 = "";
-                    var start = 0;
-                    for (0..channel + 1) |c| {
-                        const end = start + channels_length[c];
-                        color = color ++ maybe_color_fmt[start..end] ++ if (c == channel) "" else ";";
-
-                        // +1 to skip the ;
-                        start += channels_length[c] + 1;
-                    }
-                    at_least_one_color = true;
-                    output = output ++ "\x1b[38;2;" ++ color ++ "m";
                 } else {
-                    @compileError("Invalid number format, check the number of channels, must be 1 or 3, expected: {0-255} or {0-255;0-255;0-255}");
+                    @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
                 }
             } else {
+                var found = false;
                 for (@typeInfo(AnsiColor).Enum.fields) |field| {
                     if (std.mem.eql(u8, field.name, maybe_color_fmt)) {
                         const color: AnsiColor = @enumFromInt(field.value);
@@ -136,6 +85,72 @@ pub fn format(comptime fmt: []const u8) []const u8 {
 
     if (at_least_one_color) {
         return output ++ "\x1b[0m";
+    }
+
+    return output;
+}
+
+fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
+    var channels_value: [3]u8 = .{ 0, 0, 0 };
+    var channels_length: [3]u8 = .{ 0, 0, 0 };
+    var channel = 0;
+    var output: []const u8 = "";
+
+    for (fmt) |c| {
+        switch (c) {
+            '0'...'9' => {
+                var res = @mulWithOverflow(channels_value[channel], 10);
+                if (res[1] > 0) {
+                    return null;
+                    // @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
+                }
+                channels_value[channel] = res[0];
+
+                res = @addWithOverflow(channels_value[channel], c - '0');
+                if (res[1] > 0) {
+                    return null;
+                    // @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
+                }
+                channels_value[channel] = res[0];
+
+                channels_length[channel] += 1;
+            },
+            ';' => {
+                channel += 1;
+
+                if (channel >= 3) {
+                    return null;
+                    // @compileError("Invalid number format, too many channels, expected: {0-255} or {0-255;0-255;0-255}");
+                }
+            },
+            else => {
+                return null;
+                // @compileError("Invalid number format, expected: {0-255} or {0-255;0-255;0-255}");
+            },
+        }
+    }
+
+    // ANSI 256 extended
+    if (channel == 0) {
+        const color: []const u8 = fmt[0..channels_length[0]];
+        output = output ++ "\x1b[38;5;" ++ color ++ "m";
+    }
+    // TRUECOLOR
+    // TODO: check for compatibility, is it possible at comptime ??
+    else if (channel == 2) {
+        var color: []const u8 = "";
+        var start = 0;
+        for (0..channel + 1) |c| {
+            const end = start + channels_length[c];
+            color = color ++ fmt[start..end] ++ if (c == channel) "" else ";";
+
+            // +1 to skip the ;
+            start += channels_length[c] + 1;
+        }
+        output = output ++ "\x1b[38;2;" ++ color ++ "m";
+    } else {
+        return null;
+        // @compileError("Invalid number format, check the number of channels, must be 1 or 3, expected: {0-255} or {0-255;0-255;0-255}");
     }
 
     return output;
