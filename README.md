@@ -29,6 +29,12 @@ This project aims to enhance terminal applications by enabling developers to use
 
 ## Installation
 
+### Example repository
+
+You can find an example of how to [use Chroma-zig](https://github.com/adia-dev/use-chroma-zig) in this repository.
+
+### Installation as a package
+
 Chroma-Zig requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
 
 1. Fetch the project using `zig fetch`
