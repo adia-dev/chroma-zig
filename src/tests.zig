@@ -45,6 +45,20 @@ test "format - No color codes" {
     try std.testing.expectEqualStrings(expected, no_color);
 }
 
+test "format - Empty text" {
+    const red_hello = chroma.format("");
+
+    const expected = "";
+    try std.testing.expectEqualStrings(expected, red_hello);
+}
+
+test "format - Empty format" {
+    const red_hello = chroma.format("{}");
+
+    const expected = "{}";
+    try std.testing.expectEqualStrings(expected, red_hello);
+}
+
 test "format - Inline reset" {
     const inline_reset = chroma.format("{red}Colored{reset} Not colored.");
 

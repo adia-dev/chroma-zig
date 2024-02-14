@@ -54,6 +54,15 @@ pub fn format(comptime fmt: []const u8) []const u8 {
         comptime compileAssert(i < fmt.len, "Missing closing '}' in color format");
 
         const maybe_color_fmt = fmt[fmt_begin..fmt_end];
+
+        if (maybe_color_fmt.len == 0) {
+            // since empty, write the braces, skip the closing one
+            // and continue
+            output = output ++ "{" ++ maybe_color_fmt ++ "}";
+            i += 1;
+            continue;
+        }
+
         comptime {
             if (std.ascii.isDigit(maybe_color_fmt[0])) {
                 if (parse256OrTrueColor(maybe_color_fmt)) |result| {

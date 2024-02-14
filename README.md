@@ -1,11 +1,11 @@
-# Chroma-Zig
+# Chroma
 
-Chroma-Zig is a Zig library that provides flexible and dynamic string formatting with ANSI color codes. It supports standard ANSI colors, ANSI 256 extended colors, and true color (24-bit) formats, allowing for colorful terminal output with ease.
+Chroma is a Zig library that provides flexible and dynamic string formatting with ANSI color codes. It supports standard ANSI colors, ANSI 256 extended colors, and true color (24-bit) formats, allowing for colorful terminal output with ease.
 
 # NOTE-test
 
 > [!NOTE]
-> Chroma-Zig is currently in development and may not be fully functional. Please refer to the repository for the latest updates and information. It currently only support compile-time formatting. So make sure to use it in a compile-time context.
+> Chroma is currently in development and may not be fully functional. Please refer to the repository for the latest updates and information. It currently only support compile-time formatting. So make sure to use it in a compile-time context.
 
 ![Showcase example of the application on a terminal](./assets/chroma.png)
 
@@ -25,11 +25,11 @@ Chroma-Zig is a Zig library that provides flexible and dynamic string formatting
 
 ## Introduction
 
-This project aims to enhance terminal applications by enabling developers to use colors in their output more expressively and flexibly. With Chroma-Zig, you can easily format your strings with color by including color names or RGB values in curly braces within the text.
+This project aims to enhance terminal applications by enabling developers to use colors in their output more expressively and flexibly. With Chroma, you can easily format your strings with color by including color names or RGB values in curly braces within the text.
 
 ## Installation
 
-Chroma-Zig requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
+Chroma requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
 
 1. Fetch the project using `zig fetch`
 
@@ -42,7 +42,7 @@ Or manually paste this in your `build.zig.zon`
 ```zig
 .dependencies = .{
     // other deps...
-    .@"chroma-zig" = .{
+    .chroma = .{
         .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz",
         .hash = "1220359dd4fb54e367f2aa310b2cf75227aec8f05b254ef93f3bafef34ee2aa39d0b",
     },
@@ -50,7 +50,7 @@ Or manually paste this in your `build.zig.zon`
 },
 ```
 
-2. In your `build.zig`, add Chroma-Zig as a package:
+2. In your `build.zig`, add Chroma as a package:
 
 ```zig
    const std = @import("std");
@@ -60,7 +60,7 @@ Or manually paste this in your `build.zig.zon`
         const optimize = b.standardOptimizeOption(.{});
 
         // Add the chroma dep
-        const chroma = b.dependency("chroma-zig", .{});
+        const chroma = b.dependency("chroma", .{});
 
         const exe = b.addExecutable(.{
             .name = "use-chroma",
@@ -70,7 +70,7 @@ Or manually paste this in your `build.zig.zon`
         });
 
         // Adding the module to the executable
-        exe.root_module.addImport("chroma-zig", chroma.module("chroma-zig"));
+        exe.root_module.addImport("chroma", chroma.module("chroma"));
 
         b.installArtifact(exe);
 
@@ -102,7 +102,7 @@ Or manually paste this in your `build.zig.zon`
 
 ## Usage
 
-To use Chroma-Zig in your application, import the library and call the `format` function with your format string and arguments:
+To use Chroma in your application, import the library and call the `format` function with your format string and arguments:
 
 ```zig
 const std = @import("std");
@@ -151,11 +151,11 @@ pub fn main() !void {
 
 ## Dependencies
 
-Chroma-Zig does not currently have any external dependencies beyond the Zig standard library.
+Chroma does not currently have any external dependencies beyond the Zig standard library.
 
 ## Configuration
 
-No additional configuration is required to use Chroma-Zig in your Zig projects.
+No additional configuration is required to use Chroma in your Zig projects.
 
 ## Documentation
 
@@ -163,16 +163,16 @@ For detailed documentation on available colors and usage patterns, refer to the 
 
 ## Examples
 
-You can find an example of how to [use Chroma-zig](https://github.com/adia-dev/use-chroma-zig) in this repository.
+You can find an example of how to [use Chroma](https://github.com/adia-dev/use-chroma-zig) in this repository.
 
 ## Troubleshooting
 
-If you encounter any issues with compiling or using Chroma-Zig, ensure you are using a compatible Zig version. For further assistance, consult the Zig community resources or submit an issue on the Chroma-Zig GitHub repository.
+If you encounter any issues with compiling or using Chroma, ensure you are using a compatible Zig version. For further assistance, consult the Zig community resources or submit an issue on the Chroma GitHub repository.
 
 ## Contributors
 
-Contributions to Chroma-Zig are welcome! If you would like to contribute, please submit a pull request or issue on GitHub.
+Contributions to Chroma are welcome! If you would like to contribute, please submit a pull request or issue on GitHub.
 
 ## License
 
-Chroma-Zig is open-source software licensed under the MIT license. For more details, see the LICENSE file in the repository.
+Chroma is open-source software licensed under the MIT license. For more details, see the LICENSE file in the repository.
