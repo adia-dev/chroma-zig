@@ -4,8 +4,6 @@ Chroma-Zig is a Zig library that provides flexible and dynamic string formatting
 
 # NOTE-test
 
-[!NOTE]
-
 > [!NOTE]
 > Chroma-Zig is currently in development and may not be fully functional. Please refer to the repository for the latest updates and information. It currently only support compile-time formatting. So make sure to use it in a compile-time context.
 
