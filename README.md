@@ -44,7 +44,7 @@ Or manually paste this in your `build.zig.zon`
     // other deps...
     .chroma = .{
         .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz",
-        .hash = "1220359dd4fb54e367f2aa310b2cf75227aec8f05b254ef93f3bafef34ee2aa39d0b",
+        .hash = "122041636cc48e6a40790ac972dbdc7904e5a89987e476b57e4446fbe0ee68b4d467",
     },
     // ...
 },
