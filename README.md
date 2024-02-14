@@ -2,6 +2,13 @@
 
 Chroma-Zig is a Zig library that provides flexible and dynamic string formatting with ANSI color codes. It supports standard ANSI colors, ANSI 256 extended colors, and true color (24-bit) formats, allowing for colorful terminal output with ease.
 
+# NOTE-test
+
+[!NOTE]
+
+> [!NOTE]
+> Chroma-Zig is currently in development and may not be fully functional. Please refer to the repository for the latest updates and information. It currently only support compile-time formatting. So make sure to use it in a compile-time context.
+
 ![Showcase example of the application on a terminal](./assets/term.png)
 
 ## Table of Contents
@@ -26,19 +33,72 @@ This project aims to enhance terminal applications by enabling developers to use
 
 Chroma-Zig requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
 
-1. Clone the Chroma-Zig repository to your local machine.
+1. Fetch the project using `zig fetch`
+
+```bash
+zig fetch --save https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz
+```
+
+Or manually paste this in your `build.zig.zon`
+
+```zig
+.dependencies = .{
+    // other deps...
+    .@"chroma-zig" = .{
+        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz",
+        .hash = "1220359dd4fb54e367f2aa310b2cf75227aec8f05b254ef93f3bafef34ee2aa39d0b",
+    },
+    // ...
+},
+```
+
 2. In your `build.zig`, add Chroma-Zig as a package:
 
-   ```zig
-   const chroma_zig = @import("path/to/chroma-zig/build.zig");
+```zig
+   const std = @import("std");
 
-   pub fn build(b: *std.build.Builder) void {
-       ...
-       const pkg = b.addPackagePath("chroma-zig", "path/to/chroma-zig/src/lib.zig");
-       exe.addPackage(pkg);
-       ...
-   }
-   ```
+    pub fn build(b: *std.Build) void {
+        const target = b.standardTargetOptions(.{});
+        const optimize = b.standardOptimizeOption(.{});
+
+        // Add the chroma dep
+        const chroma = b.dependency("chroma-zig", .{});
+
+        const exe = b.addExecutable(.{
+            .name = "use-chroma",
+            .root_source_file = .{ .path = "src/main.zig" },
+            .target = target,
+            .optimize = optimize,
+        });
+
+        // Adding the module to the executable
+        exe.root_module.addImport("chroma-zig", chroma.module("chroma-zig"));
+
+        b.installArtifact(exe);
+
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+
+        if (b.args) |args| {
+            run_cmd.addArgs(args);
+        }
+
+        const run_step = b.step("run", "Run the app");
+        run_step.dependOn(&run_cmd.step);
+
+        const exe_unit_tests = b.addTest(.{
+            .root_source_file = .{ .path = "src/main.zig" },
+            .target = target,
+            .optimize = optimize,
+        });
+
+        const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
+
+        const test_step = b.step("test", "Run unit tests");
+        test_step.dependOn(&run_exe_unit_tests.step);
+    }
+
+```
 
 3. Use `zig build` to compile your project.
 

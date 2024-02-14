@@ -90,6 +90,7 @@ pub fn format(comptime fmt: []const u8) []const u8 {
     return output;
 }
 
+// TODO: maybe keep the compile error and dedicate this function to be comptime only
 fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
     var channels_value: [3]u8 = .{ 0, 0, 0 };
     var channels_length: [3]u8 = .{ 0, 0, 0 };
