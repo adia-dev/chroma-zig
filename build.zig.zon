@@ -55,7 +55,7 @@
         // For example...
         "build.zig",
         //"build.zig.zon",
-        "src/lib.zig",
+        "src",
         //"LICENSE",
         //"README.md",
     },
