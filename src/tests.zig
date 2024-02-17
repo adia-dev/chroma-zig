@@ -1,5 +1,5 @@
 const std = @import("std");
-const AnsiColor = @import("ansi.zig").AnsiColor;
+const AnsiCode = @import("ansi.zig").AnsiCode;
 const chroma = @import("lib.zig");
 
 // TESTS

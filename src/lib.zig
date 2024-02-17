@@ -1,21 +1,25 @@
+//BUG: apparently {{}} is not reflected to {}
+
 /// This module provides a flexible way to format strings with ANSI color codes
 /// dynamically using {colorName} placeholders within the text. It supports standard
 /// ANSI colors, ANSI 256 extended colors, and true color (24-bit) formats.
 /// It intelligently handles color formatting by parsing placeholders and replacing
 /// them with the appropriate ANSI escape codes for terminal output.
 const std = @import("std");
-const AnsiColor = @import("ansi.zig").AnsiColor;
+const AnsiCode = @import("ansi.zig").AnsiCode;
 const compileAssert = @import("utils.zig").compileAssert;
 
-/// Formats a string with ANSI, ANSI 256 color codes, and RGB color specifications.
-/// Unrecognized placeholders are output as-is, allowing for literal '{' and '}' via
-/// double braces '{{' and '}}'.
+/// Provides dynamic string formatting capabilities with ANSI escape codes for both
+/// color and text styling within terminal outputs. This module supports a wide range
+/// of formatting options including standard ANSI colors, ANSI 256 extended color set,
+/// and true color (24-bit) specifications. It parses given format strings with embedded
+/// placeholders (e.g., `{color}` or `{style}`) and replaces them with the corresponding
+/// ANSI escape codes. The format function is designed to be used at compile time,
+/// enhancing readability and maintainability of terminal output styling in Zig applications.
 ///
-/// Arguments:
-/// - `fmt`: The format string with {colorName} placeholders.
-///
-/// Returns:
-/// A formatted string with color escape codes embedded.
+/// The formatting syntax supports modifiers (`fg` for foreground and `bg` for background),
+/// as well as multiple formats within a single placeholder. Unrecognized placeholders
+/// are output as-is, allowing for the inclusion of literal braces by doubling them (`{{` and `}}`).
 // TODO: Refactor this lol
 pub fn format(comptime fmt: []const u8) []const u8 {
     @setEvalBranchQuota(2000000);
@@ -64,28 +68,56 @@ pub fn format(comptime fmt: []const u8) []const u8 {
         }
 
         comptime {
-            if (std.ascii.isDigit(maybe_color_fmt[0])) {
-                if (parse256OrTrueColor(maybe_color_fmt)) |result| {
-                    output = output ++ result;
-                    at_least_one_color = true;
-                } else {
-                    @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
-                }
-            } else {
-                var found = false;
-                for (@typeInfo(AnsiColor).Enum.fields) |field| {
-                    if (std.mem.eql(u8, field.name, maybe_color_fmt)) {
-                        const color: AnsiColor = @enumFromInt(field.value);
-                        at_least_one_color = true;
-                        output = output ++ "\x1b[" ++ color.code() ++ "m";
-                        found = true;
-                        break;
+            var start = 0;
+            var end = 0;
+            var is_background = false;
+
+            style_loop: while (start < maybe_color_fmt.len) {
+                while (end < maybe_color_fmt.len and maybe_color_fmt[end] != ',') : (end += 1) {}
+
+                var modifier_end = start;
+                while (modifier_end < maybe_color_fmt.len and maybe_color_fmt[modifier_end] != ':') : (modifier_end += 1) {}
+
+                if (modifier_end != maybe_color_fmt.len) {
+                    if (std.mem.eql(u8, maybe_color_fmt[start..modifier_end], "bg")) {
+                        is_background = true;
+                        end = modifier_end + 1;
+                        start = end;
+                        continue :style_loop;
+                    } else if (std.mem.eql(u8, maybe_color_fmt[start..modifier_end], "fg")) {
+                        is_background = false;
+                        end = modifier_end + 1;
+                        start = end;
+                        continue :style_loop;
                     }
                 }
 
-                if (!found) {
-                    output = output ++ "{" ++ maybe_color_fmt ++ "}";
+                if (std.ascii.isDigit(maybe_color_fmt[start])) {
+                    const color = parse256OrTrueColor(maybe_color_fmt[start..end], is_background);
+                    output = output ++ color;
+                    at_least_one_color = true;
+                } else {
+                    var found = false;
+                    for (@typeInfo(AnsiCode).Enum.fields) |field| {
+                        if (std.mem.eql(u8, field.name, maybe_color_fmt[start..end])) {
+                            // HACK: this would not work if I put bgMagenta for example as a color
+                            // TODO: fix this eheh
+                            const color: AnsiCode = @enumFromInt(field.value + if (is_background) 10 else 0);
+                            at_least_one_color = true;
+                            output = output ++ "\x1b[" ++ color.code() ++ "m";
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        output = output ++ "{" ++ maybe_color_fmt ++ "}";
+                    }
                 }
+
+                end = end + 1;
+                start = end;
+                is_background = false;
             }
         }
 
@@ -100,7 +132,7 @@ pub fn format(comptime fmt: []const u8) []const u8 {
 }
 
 // TODO: maybe keep the compile error and dedicate this function to be comptime only
-fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
+fn parse256OrTrueColor(fmt: []const u8, background: bool) []const u8 {
     var channels_value: [3]u8 = .{ 0, 0, 0 };
     var channels_length: [3]u8 = .{ 0, 0, 0 };
     var channel = 0;
@@ -111,15 +143,13 @@ fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
             '0'...'9' => {
                 var res = @mulWithOverflow(channels_value[channel], 10);
                 if (res[1] > 0) {
-                    return null;
-                    // @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
+                    @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
                 }
                 channels_value[channel] = res[0];
 
                 res = @addWithOverflow(channels_value[channel], c - '0');
                 if (res[1] > 0) {
-                    return null;
-                    // @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
+                    @compileError("Invalid number format, channel value too high >= 256, expected: {0-255} or {0-255;0-255;0-255}");
                 }
                 channels_value[channel] = res[0];
 
@@ -129,13 +159,14 @@ fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
                 channel += 1;
 
                 if (channel >= 3) {
-                    return null;
-                    // @compileError("Invalid number format, too many channels, expected: {0-255} or {0-255;0-255;0-255}");
+                    @compileError("Invalid number format, too many channels, expected: {0-255} or {0-255;0-255;0-255}");
                 }
             },
+            ',' => {
+                break;
+            },
             else => {
-                return null;
-                // @compileError("Invalid number format, expected: {0-255} or {0-255;0-255;0-255}");
+                @compileError("Invalid number format, expected: {0-255} or {0-255;0-255;0-255}");
             },
         }
     }
@@ -143,7 +174,11 @@ fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
     // ANSI 256 extended
     if (channel == 0) {
         const color: []const u8 = fmt[0..channels_length[0]];
-        output = output ++ "\x1b[38;5;" ++ color ++ "m";
+        if (background) {
+            output = output ++ "\x1b[48;5;" ++ color ++ "m";
+        } else {
+            output = output ++ "\x1b[38;5;" ++ color ++ "m";
+        }
     }
     // TRUECOLOR
     // TODO: check for compatibility, is it possible at comptime ??
@@ -157,10 +192,13 @@ fn parse256OrTrueColor(fmt: []const u8) ?[]const u8 {
             // +1 to skip the ;
             start += channels_length[c] + 1;
         }
-        output = output ++ "\x1b[38;2;" ++ color ++ "m";
+        if (background) {
+            output = output ++ "\x1b[48;2;" ++ color ++ "m";
+        } else {
+            output = output ++ "\x1b[38;2;" ++ color ++ "m";
+        }
     } else {
-        return null;
-        // @compileError("Invalid number format, check the number of channels, must be 1 or 3, expected: {0-255} or {0-255;0-255;0-255}");
+        @compileError("Invalid number format, check the number of channels, must be 1 or 3, expected: {0-255} or {0-255;0-255;0-255}");
     }
 
     return output;

@@ -2,31 +2,42 @@ const std = @import("std");
 const chroma = @import("lib.zig");
 
 pub fn main() !void {
-    const examples = [_]struct { fmt: []const u8, arg: []const u8 }{
-        // ANSI foreground and background colors
-        .{ .fmt = "{yellow}ANSI {s}", .arg = "SUPPORTED" },
-        .{ .fmt = "{blue}JJK is the best new {s}", .arg = "generation" },
-        .{ .fmt = "{red}Disagree, and {cyan}Satoru Gojo will throw a {magenta}{s}{reset} at you", .arg = "purple ball" },
-        .{ .fmt = "{bgMagenta}{white}Yuji Itadori's resolve: {s}", .arg = "I'll eat the finger." },
-        .{ .fmt = "{bgYellow}{black}With this treasure, I summon: {s}", .arg = "Mahoraga or Makora idk" },
-        .{ .fmt = "{bgBlue}{white}LeBron {s}", .arg = "James" },
-        .{ .fmt = "{green}Please, Lonzo Ball, come back in {s}", .arg = "2024" },
-        .{ .fmt = "{blue}JJK is the best new {s}{red} once again", .arg = "generation" },
-
-        // ANSI 256 extended colors
-        .{ .fmt = "\n{221}256 Extended set, too! {s}", .arg = "eheh" },
-        .{ .fmt = "{121}Finding examples is hard, {s}", .arg = "shirororororo" },
-
-        // TrueColors
-        .{ .fmt = "\n{221;10;140}How about {13;45;200}{s}??", .arg = "true colors" },
-        .{ .fmt = "{255;202;255}Toge Inumaki says: {s}", .arg = "Salmon" },
-        .{ .fmt = "{255;105;180}Nobara Kugisaki's fierce {s}", .arg = "Nail Hammer" },
-        .{ .fmt = "{10;94;13}Juujika no {s}", .arg = "Rokunin" },
+    const examples = [_]struct { fmt: []const u8, arg: ?[]const u8 }{
+        // Basic color and style
+        .{ .fmt = "{bold,red}Bold and Red{reset}", .arg = null },
+        // Combining background and foreground with styles
+        .{ .fmt = "{fg:cyan,bg:magenta}{underline}Cyan on Magenta underline{reset}", .arg = null },
+        // Nested styles and colors
+        .{ .fmt = "{green}Green {bold}and Bold{reset,blue,italic} to blue italic{reset}", .arg = null },
+        // Extended ANSI color with arg example
+        .{ .fmt = "{bg:120}Extended ANSI {s}{reset}", .arg = "Background" },
+        // True color specification
+        .{ .fmt = "{fg:255;100;0}True Color Orange Text{reset}", .arg = null },
+        // Mixed color and style formats
+        .{ .fmt = "{bg:28,italic}{fg:231}Mixed Background and Italic{reset}", .arg = null },
+        // Unsupported/Invalid color code >= 256, Error thrown at compile time
+        // .{ .fmt = "{fg:999}This should not crash{reset}", .arg = null },
+        // Demonstrating blink, note: may not be supported in all terminals
+        .{ .fmt = "{blink}Blinking Text (if supported){reset}", .arg = null },
+        // Using dim and reverse video
+        .{ .fmt = "{dim,reverse}Dim and Reversed{reset}", .arg = null },
+        // Custom message with dynamic content
+        .{ .fmt = "{blue,bg:magenta}User {bold}{s}{reset,0;255;0} logged in successfully.", .arg = "Charlie" },
+        // Combining multiple styles and reset
+        .{ .fmt = "{underline,cyan}Underlined Cyan{reset} then normal", .arg = null },
+        // Multiple format specifiers for complex formatting
+        .{ .fmt = "{fg:144,bg:52,bold,italic}Fancy {underline}Styling{reset}", .arg = null },
+        // Jujutsu Kaisen !!
+        .{ .fmt = "{bg:72,bold,italic}Jujutsu Kaisen !!{reset}", .arg = null },
     };
 
     inline for (examples) |example| {
-        std.debug.print(chroma.format(example.fmt) ++ "\n", .{example.arg});
+        if (example.arg) |arg| {
+            std.debug.print(chroma.format(example.fmt) ++ "\n", .{arg});
+        } else {
+            std.debug.print(chroma.format(example.fmt) ++ "\n", .{});
+        }
     }
 
-    std.debug.print(chroma.format("{blue}Eventually, the {red}formatting{reset} looks like {130;43;122}{s}!\n"), .{"this"});
+    std.debug.print(chroma.format("{blue}{underline}Eventually{reset}, the {red}formatting{reset} looks like {130;43;122}{s}!\n"), .{"this"});
 }

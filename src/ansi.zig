@@ -1,9 +1,20 @@
-/// The `AnsiColor` enum provides a simple and type-safe way to use ANSI color codes
-/// in terminal output. It includes both foreground and background colors, as well as
-/// a method to reset the color. It offers two public methods to interact with the
-/// color values: `to_string`, which returns the string representation of the color,
-/// and `code`, which returns the ANSI escape code associated with the color.
-pub const AnsiColor = enum(u8) {
+/// The `AnsiCode` enum offers a comprehensive set of ANSI escape codes for both
+/// styling and coloring text in the terminal. This includes basic styles like bold
+/// and italic, foreground and background colors, and special modes like blinking or
+/// hidden text. It provides methods for obtaining the string name and the corresponding
+/// ANSI escape code of each color or style, enabling easy and readable text formatting.
+pub const AnsiCode = enum(u8) {
+    // Standard style codes
+    reset = 0,
+    bold,
+    dim,
+    italic,
+    underline,
+    ///Not widely supported
+    blink,
+    reverse = 7,
+    hidden,
+
     // Standard text colors
     black = 30,
     red,
@@ -23,14 +34,13 @@ pub const AnsiColor = enum(u8) {
     bgMagenta,
     bgCyan,
     bgWhite,
-    reset = 0,
 
     /// Returns the string representation of the color.
     /// This method makes it easy to identify a color by its name in the source code.
     ///
     /// Returns:
     /// A slice of constant u8 bytes representing the color's name.
-    pub fn to_string(self: AnsiColor) []const u8 {
+    pub fn to_string(self: AnsiCode) []const u8 {
         return @tagName(self);
     }
 
@@ -40,8 +50,19 @@ pub const AnsiColor = enum(u8) {
     ///
     /// Returns:
     /// A slice of constant u8 bytes representing the ANSI escape code for the color.
-    pub fn code(self: AnsiColor) []const u8 {
+    pub fn code(self: AnsiCode) []const u8 {
         return switch (self) {
+            // Standard style codes
+            .reset => "0",
+            .bold => "1",
+            .dim => "2",
+            .italic => "3",
+            .underline => "4",
+            // Not widely supported
+            .blink => "5",
+            .reverse => "7",
+            .hidden => "8",
+            // foregroond colors
             .black => "30",
             .red => "31",
             .green => "32",
@@ -50,6 +71,7 @@ pub const AnsiColor = enum(u8) {
             .magenta => "35",
             .cyan => "36",
             .white => "37",
+            // background colors
             .bgBlack => "40",
             .bgRed => "41",
             .bgGreen => "42",
@@ -58,7 +80,6 @@ pub const AnsiColor = enum(u8) {
             .bgMagenta => "45",
             .bgCyan => "46",
             .bgWhite => "47",
-            .reset => "0",
         };
     }
 };
