@@ -31,7 +31,7 @@ This project aims to enhance terminal applications by enabling developers to use
 
 Chroma requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
 
-1. Fetch the project using `zig fetch`
+1. Fetch the project using `zig fetch` (recommended !)
 
 ```bash
 zig fetch --save https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz
@@ -43,59 +43,22 @@ Or manually paste this in your `build.zig.zon`
 .dependencies = .{
     // other deps...
     .chroma = .{
-        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz",
-        .hash = "12203dca2231f1d4e1fe9e0c2f28e6497db76c24434b6ca9b872eaca9d40f45d97ba",
+        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.1.tar.gz",
+        .hash = "<HASH_OF_THE_RELEASE>",
     },
     // ...
 },
 ```
 
-2. In your `build.zig`, add Chroma as a package:
+Note that if you do not know the hash of the release, zig will spit it out as an error in the console.
+
+2. In your `build.zig`, add Chroma as a module:
 
 ```zig
-   const std = @import("std");
-
-    pub fn build(b: *std.Build) void {
-        const target = b.standardTargetOptions(.{});
-        const optimize = b.standardOptimizeOption(.{});
-
-        // Add the chroma dep
-        const chroma = b.dependency("chroma", .{});
-
-        const exe = b.addExecutable(.{
-            .name = "use-chroma",
-            .root_source_file = .{ .path = "src/main.zig" },
-            .target = target,
-            .optimize = optimize,
-        });
-
-        // Adding the module to the executable
-        exe.root_module.addImport("chroma", chroma.module("chroma"));
-
-        b.installArtifact(exe);
-
-        const run_cmd = b.addRunArtifact(exe);
-        run_cmd.step.dependOn(b.getInstallStep());
-
-        if (b.args) |args| {
-            run_cmd.addArgs(args);
-        }
-
-        const run_step = b.step("run", "Run the app");
-        run_step.dependOn(&run_cmd.step);
-
-        const exe_unit_tests = b.addTest(.{
-            .root_source_file = .{ .path = "src/main.zig" },
-            .target = target,
-            .optimize = optimize,
-        });
-
-        const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-
-        const test_step = b.step("test", "Run unit tests");
-        test_step.dependOn(&run_exe_unit_tests.step);
-    }
-
+// Add the chroma dep
+const chroma = b.dependency("chroma", .{});
+// Adding the module to the executable
+exe.root_module.addImport("chroma", chroma.module("chroma"));
 ```
 
 3. Use `zig build` to compile your project.
@@ -109,34 +72,44 @@ const std = @import("std");
 const chroma = @import("lib.zig");
 
 pub fn main() !void {
-    const examples = [_]struct { fmt: []const u8, arg: []const u8 }{
-        // Ansi fg and bg
-        .{ .fmt = "{yellow}ANSI {s}", .arg = "SUPPORTED" },
-        .{ .fmt = "{blue}JJK is the best new {s}", .arg = "gen" },
-        .{ .fmt = "{red}Disagree and {cyan}Satoru Gojo will throw a {magenta}{s}{reset} on you", .arg = "purple" },
-        .{ .fmt = "{bgMagenta}{white}Yuji Itadori's resolve: {s}", .arg = "I'll eat the finger." },
-        .{ .fmt = "{bgYellow}{black}With this treasure I summon: {s}", .arg = "Mahoraga or Makora idk" },
-        .{ .fmt = "{bgBlue}{white}LeBron James: {s}", .arg = "Strive for greatness." },
-        .{ .fmt = "{red}Michael Jordan's legacy: {s}", .arg = "The GOAT" },
-        .{ .fmt = "{green}Please Lonzo Ball comeback in {s}", .arg = "2024" },
-        .{ .fmt = "{blue}JJK is the best new {s}", .arg = "gen" },
-
-        // Ansi 256 extended
-        .{ .fmt = "\n{221}256 Extended set too ! {s}", .arg = "eheh" },
-        .{ .fmt = "{121}I don't have anything to say finding examples is hard {s}", .arg = "shirororororo" },
-
-        // TrueColors
-        .{ .fmt = "\n{221;10;140}How about {13;45;200}{s} ??", .arg = "true colors" },
-        .{ .fmt = "{255;202;255}Toge Inumaki says: {s}", .arg = "Salmon" },
-        .{ .fmt = "{255;105;180}Nobara Kugisaki's fierce {s}", .arg = "Nail Hammer" },
-        .{ .fmt = "{10;94;13}Juujika no {s}", .arg = "Rokunin" },
+    const examples = [_]struct { fmt: []const u8, arg: ?[]const u8 }{
+        // Basic color and style
+        .{ .fmt = "{bold,red}Bold and Red{reset}", .arg = null },
+        // Combining background and foreground with styles
+        .{ .fmt = "{fg:cyan,bg:magenta}{underline}Cyan on Magenta underline{reset}", .arg = null },
+        // Nested styles and colors
+        .{ .fmt = "{green}Green {bold}and Bold{reset,blue,italic} to blue italic{reset}", .arg = null },
+        // Extended ANSI color with arg example
+        .{ .fmt = "{bg:120}Extended ANSI {s}{reset}", .arg = "Background" },
+        // True color specification
+        .{ .fmt = "{fg:255;100;0}True Color Orange Text{reset}", .arg = null },
+        // Mixed color and style formats
+        .{ .fmt = "{bg:28,italic}{fg:231}Mixed Background and Italic{reset}", .arg = null },
+        // Unsupported/Invalid color code >= 256, Error thrown at compile time
+        // .{ .fmt = "{fg:999}This should not crash{reset}", .arg = null },
+        // Demonstrating blink, note: may not be supported in all terminals
+        .{ .fmt = "{blink}Blinking Text (if supported){reset}", .arg = null },
+        // Using dim and reverse video
+        .{ .fmt = "{dim,reverse}Dim and Reversed{reset}", .arg = null },
+        // Custom message with dynamic content
+        .{ .fmt = "{blue,bg:magenta}User {bold}{s}{reset,0;255;0} logged in successfully.", .arg = "Charlie" },
+        // Combining multiple styles and reset
+        .{ .fmt = "{underline,cyan}Underlined Cyan{reset} then normal", .arg = null },
+        // Multiple format specifiers for complex formatting
+        .{ .fmt = "{fg:144,bg:52,bold,italic}Fancy {underline}Styling{reset}", .arg = null },
+        // Jujutsu Kaisen !!
+        .{ .fmt = "{bg:72,bold,italic}Jujutsu Kaisen !!{reset}", .arg = null },
     };
 
     inline for (examples) |example| {
-        std.debug.print(chroma.format(example.fmt) ++ "\n", .{example.arg});
+        if (example.arg) |arg| {
+            std.debug.print(chroma.format(example.fmt) ++ "\n", .{arg});
+        } else {
+            std.debug.print(chroma.format(example.fmt) ++ "\n", .{});
+        }
     }
 
-    std.debug.print(chroma.format("{blue}Eventually, the {red}formatting{reset} looks like {130;43;122}{s} !\n"), .{"this"});
+    std.debug.print(chroma.format("{blue}{underline}Eventually{reset}, the {red}formatting{reset} looks like {130;43;122}{s}!\n"), .{"this"});
 }
 
 ```
