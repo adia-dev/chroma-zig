@@ -33,15 +33,14 @@ pub fn format(comptime fmt: []const u8) []const u8 {
         // Find next '{' or '}' or end of string
         inline while (i < fmt.len and fmt[i] != '{' and fmt[i] != '}') : (i += 1) {}
 
+        // Handle escaped braces '{{' or '}}'
+        if (i + 1 < fmt.len and fmt[i + 1] == fmt[i]) {
+            i += 2; // Skip both braces
+        }
+
         // Append text up to the next control character
         if (start_index != i) {
             output = output ++ fmt[start_index..i];
-        }
-
-        // Handle escaped braces '{{' or '}}'
-        if (i + 1 < fmt.len and fmt[i + 1] == fmt[i]) {
-            output = output ++ fmt[i .. i + 1]; // Append a single brace
-            i += 2; // Skip both braces
             continue;
         }
 

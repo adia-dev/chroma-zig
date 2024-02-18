@@ -30,7 +30,7 @@ test "format - Background color and reset" {
 test "format - Escaped braces" {
     const escaped_braces = chroma.format("{{This}} is {green}green.");
 
-    const expected = "{" ++ "This" ++ "} is " ++ COLOR_OPEN ++ "32m" ++ "green." ++ RESET;
+    const expected = "{{" ++ "This" ++ "}} is " ++ COLOR_OPEN ++ "32m" ++ "green." ++ RESET;
     try std.testing.expectEqualStrings(expected, escaped_braces);
 }
 
