@@ -6,6 +6,8 @@
 
 Chroma is a Zig library for advanced ANSI color and text styling in terminal output. It allows developers to dynamically format strings with embedded placeholders (e.g. `{red}`, `{bold}`, `{fg:255;100;0}` for true color) and converts them into ANSI escape sequences. This makes it easy to apply complex styles, switch between foreground/background colors, and reset formatting on the fly—all at compile time.
 
+<img width="720" alt="chroma" src="https://github.com/user-attachments/assets/251f16b7-8cfc-4222-86b6-699d05976c4b">
+
 ## ✨ Features
 
 - **Simple, Readable Syntax:**  
