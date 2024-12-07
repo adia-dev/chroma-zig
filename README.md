@@ -1,151 +1,106 @@
 # Chroma
 
-Chroma is a Zig library that provides flexible and dynamic string formatting with ANSI color codes. It supports standard ANSI colors, ANSI 256 extended colors, and true color (24-bit) formats, allowing for colorful terminal output with ease.
+**Version:** 0.13.0  
+**License:** MIT  
+**Language:** [Zig](https://ziglang.org)
 
-# NOTE-test
+Chroma is a Zig library for advanced ANSI color and text styling in terminal output. It allows developers to dynamically format strings with embedded placeholders (e.g. `{red}`, `{bold}`, `{fg:255;100;0}` for true color) and converts them into ANSI escape sequences. This makes it easy to apply complex styles, switch between foreground/background colors, and reset formatting on the fly—all at compile time.
 
-> [!NOTE]
-> Chroma is currently in development and may not be fully functional. Please refer to the repository for the latest updates and information. It currently only support compile-time formatting. So make sure to use it in a compile-time context.
+## ✨ Features
 
-![Showcase example of the application on a terminal](./assets/chroma.png)
+- **Simple, Readable Syntax:**  
+  Use `{red}`, `{bold}`, or `{green,bgBlue}` inline within strings for clear and maintainable code.
 
-## Table of Contents
+- **Comprehensive ANSI Codes:**  
+  Support for standard colors, background colors, bold, italic, underline, dim, and even less commonly supported effects like `blink` and `reverse`.
 
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Features](#features)
-- [Dependencies](#dependencies)
-- [Configuration](#configuration)
-- [Documentation](#documentation)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
-- [Contributors](#contributors)
-- [License](#license)
+- **Extended and True Color Support:**  
+  Take advantage of ANSI 256 extended color codes and true color (24-bit) formats using syntax like `{fg:120}`, `{bg:28}`, or `{fg:255;100;0}` for fine-grained color control.
 
-## Introduction
+- **Compile-Time Safety:**  
+  Chroma verifies format strings at compile time, reducing runtime errors and ensuring your formatting instructions are valid.
 
-This project aims to enhance terminal applications by enabling developers to use colors in their output more expressively and flexibly. With Chroma, you can easily format your strings with color by including color names or RGB values in curly braces within the text.
+- **Reset-Friendly:**  
+  Automatically appends `"\x1b[0m"` when necessary, ensuring that styles don’t “bleed” into subsequent output.
 
-## Installation
+## 🚀 Getting Started
 
-Chroma requires Zig version 0.12.0-dev.2701+d18f52197 or newer. You can include it in your Zig project by adding it as a package in your `build.zig` file:
+1. **Add Chroma to Your Zig Project:**
+   Include Chroma as a dependency in your `build.zig` or your `build.zig.zon`. For example:
 
-1. Fetch the project using `zig fetch` (recommended !)
+   ```zig
+   const std = @import("std");
+
+   pub fn build(b: *std.Build) void {
+       const target = b.standardTargetOptions(.{});
+       const optimize = b.standardOptimizeOption(.{});
+
+       const lib = b.addStaticLibrary(.{
+           .name = "chroma",
+           .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/lib.zig" } },
+           .target = target,
+           .optimize = optimize,
+       });
+
+       b.installArtifact(lib);
+   }
+   ```
+
+2. **Import and Use:**
+   After building and installing, you can import `chroma` into your Zig code:
+
+   ```zig
+   const std = @import("std");
+   const chroma = @import("lib.zig");
+
+   pub fn main() !void {
+       std.debug.print(chroma.format("{bold,red}Hello, Red World!{reset}\n"), .{});
+   }
+   ```
+
+3. **Run and Test:**
+   - Build your project with `zig build`.
+   - Run your binary and see the styled output in your terminal!
+
+## 🧪 Testing
+
+Chroma includes a suite of unit tests to ensure reliability:
 
 ```bash
-zig fetch --save https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.0.tar.gz
+zig build test
 ```
 
-Or manually paste this in your `build.zig.zon`
+If all tests pass, you’re good to go!
 
-```zig
-.dependencies = .{
-    // other deps...
-    .chroma = .{
-        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/tags/v0.1.1.tar.gz",
-        .hash = "<HASH_OF_THE_RELEASE>",
-    },
-    // ...
-},
-```
+## 🔧 Configuration
 
-Note that if you do not know the hash of the release, zig will spit it out as an error in the console.
+Chroma works out-of-the-box. For more complex scenarios (e.g., custom labels, multiple color formats), refer to `src/lib.zig` and `src/ansi.zig` for detailed code comments that explain available options and their intended usage.
 
-2. In your `build.zig`, add Chroma as a module:
+## 📦 New in Version 0.13.0
 
-```zig
-// Add the chroma dep
-const chroma = b.dependency("chroma", .{});
-// Adding the module to the executable
-exe.root_module.addImport("chroma", chroma.module("chroma"));
-```
+- **Updated Compatibility:** Now aligned with Zig `0.13.0`.
+- **Improved Parser Logic:** More robust handling of multiple formats within the same placeholder.
+- **Better Testing:** Additional tests ensure extended color and true color formats behave as expected.
+- **Performance Tweaks:** Minor compile-time optimizations for faster builds.
 
-3. Use `zig build` to compile your project.
+## 🤝 Contributing
 
-## Usage
+Contributions are welcome! To get involved:
 
-To use Chroma in your application, import the library and call the `format` function with your format string and arguments:
+1. **Fork & Clone:**  
+   Fork the repository and clone it locally.
 
-```zig
-const std = @import("std");
-const chroma = @import("lib.zig");
+2. **Branch & Develop:**  
+   Create a new branch and implement your changes or new features.
 
-pub fn main() !void {
-    const examples = [_]struct { fmt: []const u8, arg: ?[]const u8 }{
-        // Basic color and style
-        .{ .fmt = "{bold,red}Bold and Red{reset}", .arg = null },
-        // Combining background and foreground with styles
-        .{ .fmt = "{fg:cyan,bg:magenta}{underline}Cyan on Magenta underline{reset}", .arg = null },
-        // Nested styles and colors
-        .{ .fmt = "{green}Green {bold}and Bold{reset,blue,italic} to blue italic{reset}", .arg = null },
-        // Extended ANSI color with arg example
-        .{ .fmt = "{bg:120}Extended ANSI {s}{reset}", .arg = "Background" },
-        // True color specification
-        .{ .fmt = "{fg:255;100;0}True Color Orange Text{reset}", .arg = null },
-        // Mixed color and style formats
-        .{ .fmt = "{bg:28,italic}{fg:231}Mixed Background and Italic{reset}", .arg = null },
-        // Unsupported/Invalid color code >= 256, Error thrown at compile time
-        // .{ .fmt = "{fg:999}This should not crash{reset}", .arg = null },
-        // Demonstrating blink, note: may not be supported in all terminals
-        .{ .fmt = "{blink}Blinking Text (if supported){reset}", .arg = null },
-        // Using dim and reverse video
-        .{ .fmt = "{dim,reverse}Dim and Reversed{reset}", .arg = null },
-        // Custom message with dynamic content
-        .{ .fmt = "{blue,bg:magenta}User {bold}{s}{reset,0;255;0} logged in successfully.", .arg = "Charlie" },
-        // Combining multiple styles and reset
-        .{ .fmt = "{underline,cyan}Underlined Cyan{reset} then normal", .arg = null },
-        // Multiple format specifiers for complex formatting
-        .{ .fmt = "{fg:144,bg:52,bold,italic}Fancy {underline}Styling{reset}", .arg = null },
-        // Jujutsu Kaisen !!
-        .{ .fmt = "{bg:72,bold,italic}Jujutsu Kaisen !!{reset}", .arg = null },
-    };
+3. **Test & Document:**  
+   Run `zig build test` to ensure your changes haven’t broken anything. Update or add documentation as needed.
 
-    inline for (examples) |example| {
-        if (example.arg) |arg| {
-            std.debug.print(chroma.format(example.fmt) ++ "\n", .{arg});
-        } else {
-            std.debug.print(chroma.format(example.fmt) ++ "\n", .{});
-        }
-    }
+4. **Pull Request:**  
+   Submit a Pull Request describing what you changed and why. We’ll review and merge it if everything looks good.
 
-    std.debug.print(chroma.format("{blue}{underline}Eventually{reset}, the {red}formatting{reset} looks like {130;43;122}{s}!\n"), .{"this"});
-}
+## 📝 License
 
-```
+[MIT License](./LICENSE)
 
-## Features
-
-- **Standard ANSI Colors**: Easily use standard ANSI colors in your strings.
-- **ANSI 256 Colors**: Utilize the extended set of 256 colors for more detailed color output.
-- **True Colors**: Use true color (24-bit) RGB values for precise color representation.
-- **Flexible Formatting**: Combine colors, reset styles, and include text dynamically within your format strings.
-- **Compile-Time Checks**: The format function is evaluated at compile-time, ensuring that your color format strings are valid.
-
-## Dependencies
-
-Chroma does not currently have any external dependencies beyond the Zig standard library.
-
-## Configuration
-
-No additional configuration is required to use Chroma in your Zig projects.
-
-## Documentation
-
-For detailed documentation on available colors and usage patterns, refer to the source files in the `src` directory. The main API is provided through `src/lib.zig`, with utility functions and ANSI color definitions located in `src/utils.zig` and `src/ansi.zig`, respectively.
-
-## Examples
-
-You can find an example of how to [use Chroma](https://github.com/adia-dev/use-chroma-zig) in this repository.
-
-## Troubleshooting
-
-If you encounter any issues with compiling or using Chroma, ensure you are using a compatible Zig version. For further assistance, consult the Zig community resources or submit an issue on the Chroma GitHub repository.
-
-## Contributors
-
-Contributions to Chroma are welcome! If you would like to contribute, please submit a pull request or issue on GitHub.
-
-## License
-
-Chroma is open-source software licensed under the MIT license. For more details, see the LICENSE file in the repository.
+_Chroma aims to simplify ANSI coloring in Zig, making your command-line tools, logs, and output more expressive and visually appealing._
