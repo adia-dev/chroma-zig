@@ -1,6 +1,6 @@
 # Chroma
 
-**Version:** 0.13.0  
+**Version:** 0.14.x  
 **License:** MIT  
 **Language:** [Zig](https://ziglang.org)
 
@@ -26,6 +26,27 @@ Chroma is a Zig library for advanced ANSI color and text styling in terminal out
   Automatically appends `"\x1b[0m"` when necessary, ensuring that styles don’t “bleed” into subsequent output.
 
 ## 🚀 Getting Started
+
+### Prerequisite
+
+1. Fetch the project using `zig fetch`
+
+```bash
+zig fetch --save https://github.com/adia-dev/chroma-zig/archive/refs/heads/0.14.x.tar.gz
+```
+
+Or manually paste this in your `build.zig.zon`
+
+```zig
+.dependencies = .{
+    // other deps...
+    .chroma = .{
+        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/heads/0.14.x.tar.gz",
+        .hash = "122038e074b99abfc27844394394351d911c45671ec02b9d9eb009c6565041f82212",
+    },
+    // ...
+},
+```
 
 1. **Add Chroma to Your Zig Project:**
    Include Chroma as a dependency in your `build.zig` or your `build.zig.zon`. For example:
@@ -116,9 +137,9 @@ If all tests pass, you’re good to go!
 
 Chroma works out-of-the-box. For more complex scenarios (e.g., custom labels, multiple color formats), refer to `src/lib.zig` and `src/ansi.zig` for detailed code comments that explain available options and their intended usage.
 
-## 📦 New in Version 0.13.0
+## 📦 New in Version 0.14.x
 
-- **Updated Compatibility:** Now aligned with Zig `0.13.0`.
+- **Updated Compatibility:** Now aligned with Zig `0.14.x`.
 - **Improved Parser Logic:** More robust handling of multiple formats within the same placeholder.
 - **Better Testing:** Additional tests ensure extended color and true color formats behave as expected.
 - **Performance Tweaks:** Minor compile-time optimizations for faster builds.
@@ -127,16 +148,16 @@ Chroma works out-of-the-box. For more complex scenarios (e.g., custom labels, mu
 
 Contributions are welcome! To get involved:
 
-1. **Fork & Clone:**  
+1. **Fork & Clone:**
    Fork the repository and clone it locally.
 
-2. **Branch & Develop:**  
+2. **Branch & Develop:**
    Create a new branch and implement your changes or new features.
 
-3. **Test & Document:**  
+3. **Test & Document:**
    Run `zig build test` to ensure your changes haven’t broken anything. Update or add documentation as needed.
 
-4. **Pull Request:**  
+4. **Pull Request:**
    Submit a Pull Request describing what you changed and why. We’ll review and merge it if everything looks good.
 
 ## 📝 License
@@ -144,3 +165,7 @@ Contributions are welcome! To get involved:
 [MIT License](./LICENSE)
 
 _Chroma aims to simplify ANSI coloring in Zig, making your command-line tools, logs, and output more expressive and visually appealing._
+
+```
+
+```
