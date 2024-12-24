@@ -97,7 +97,7 @@ pub fn format(comptime fmt: []const u8) []const u8 {
                     at_least_one_color = true;
                 } else {
                     var found = false;
-                    for (@typeInfo(AnsiCode).Enum.fields) |field| {
+                    for (@typeInfo(AnsiCode).@"enum".fields) |field| {
                         if (std.mem.eql(u8, field.name, maybe_color_fmt[start..end])) {
                             // HACK: this would not work if I put bgMagenta for example as a color
                             // TODO: fix this eheh
