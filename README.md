@@ -27,6 +27,27 @@ Chroma is a Zig library for advanced ANSI color and text styling in terminal out
 
 ## 🚀 Getting Started
 
+### Prerequisite
+
+1. Fetch the project using `zig fetch`
+
+```bash
+zig fetch --save https://github.com/adia-dev/chroma-zig/archive/refs/heads/main.zip
+```
+
+Or manually paste this in your `build.zig.zon`
+
+```zig
+.dependencies = .{
+    // other deps...
+    .chroma = .{
+        .url = "https://github.com/adia-dev/chroma-zig/archive/refs/heads/main.zip",
+        .hash = "12209a8a991121bba3b21f31d275588690dc7c0d7fa9c361fd892e782dd88e0fb2ba",
+    },
+    // ...
+},
+```
+
 1. **Add Chroma to Your Zig Project:**
    Include Chroma as a dependency in your `build.zig` or your `build.zig.zon`. For example:
 
