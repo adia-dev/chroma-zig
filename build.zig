@@ -4,22 +4,29 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("chroma", .{ .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/lib.zig" } } });
-
-    const lib = b.addStaticLibrary(.{
-        .name = "chroma",
+    const mod = b.addModule("chroma", .{ 
         .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/lib.zig" } },
         .target = target,
         .optimize = optimize,
     });
 
+    const lib = b.addLibrary(.{
+        .name = "chroma",
+        .linkage = .static,
+        .root_module = mod,
+    });
+
     b.installArtifact(lib);
 
-    const exe = b.addExecutable(.{
-        .name = "chroma",
+    const exe_mod = b.addModule("chroma", .{
         .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/main.zig" } },
         .target = target,
         .optimize = optimize,
+    });
+
+    const exe = b.addExecutable(.{
+        .name = "chroma",
+        .root_module = exe_mod,
     });
 
     b.installArtifact(exe);
@@ -36,17 +43,13 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     const lib_unit_tests = b.addTest(.{
-        .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/lib.zig" } },
-        .target = target,
-        .optimize = optimize,
+        .root_module = mod,
     });
 
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/main.zig" } },
-        .target = target,
-        .optimize = optimize,
+        .root_module = exe_mod,
     });
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
