@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    const exe_mod = b.addModule("chroma", .{
+    const exe_mod = b.addModule("chroma-exe", .{
         .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/main.zig" } },
         .target = target,
         .optimize = optimize,
