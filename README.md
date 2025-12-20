@@ -1,6 +1,6 @@
 # Chroma
 
-**Version:** 0.13.0  
+**Version:** 0.15.1  
 **License:** MIT  
 **Language:** [Zig](https://ziglang.org)
 
@@ -137,9 +137,9 @@ If all tests pass, you’re good to go!
 
 Chroma works out-of-the-box. For more complex scenarios (e.g., custom labels, multiple color formats), refer to `src/lib.zig` and `src/ansi.zig` for detailed code comments that explain available options and their intended usage.
 
-## 📦 New in Version 0.13.0
+## 📦 New in Version 0.15.1
 
-- **Updated Compatibility:** Now aligned with Zig `0.13.0`.
+- **Updated Compatibility:** Now aligned with Zig `0.15.1`.
 - **Improved Parser Logic:** More robust handling of multiple formats within the same placeholder.
 - **Better Testing:** Additional tests ensure extended color and true color formats behave as expected.
 - **Performance Tweaks:** Minor compile-time optimizations for faster builds.
