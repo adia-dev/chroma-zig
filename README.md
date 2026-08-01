@@ -1,7 +1,7 @@
 # Chroma
 
-**Version:** 0.15.1  
-**License:** MIT  
+**Zig Version:** 0.16.0<br>
+**License:** MIT<br>
 **Language:** [Zig](https://ziglang.org)
 
 Chroma is a Zig library for advanced ANSI color and text styling in terminal output. It allows developers to dynamically format strings with embedded placeholders (e.g. `{red}`, `{bold}`, `{fg:255;100;0}` for true color) and converts them into ANSI escape sequences. This makes it easy to apply complex styles, switch between foreground/background colors, and reset formatting on the fly—all at compile time.
@@ -42,7 +42,7 @@ Or manually paste this in your `build.zig.zon`
     // other deps...
     .chroma = .{
         .url = "https://github.com/adia-dev/chroma-zig/archive/refs/heads/main.zip",
-        .hash = "12209a8a991121bba3b21f31d275588690dc7c0d7fa9c361fd892e782dd88e0fb2ba",
+        .hash = "chroma-0.1.2-dA-RkbRIAACztjsL_aHnaZqu3GB53kpZziNo_TdxiLnf",
     },
     // ...
 },
@@ -58,11 +58,16 @@ Or manually paste this in your `build.zig.zon`
        const target = b.standardTargetOptions(.{});
        const optimize = b.standardOptimizeOption(.{});
 
-       const lib = b.addStaticLibrary(.{
-           .name = "chroma",
-           .root_source_file = .{ .src_path = .{ .owner = b, .sub_path = "src/lib.zig" } },
+       const mod = b.addModule("chroma", .{
+           .root_source_file = b.path("src/lib.zig"),
            .target = target,
            .optimize = optimize,
+       });
+
+       const lib = b.addLibrary(.{
+           .name = "chroma",
+           .linkage = .static,
+           .root_module = mod,
        });
 
        b.installArtifact(lib);
@@ -137,12 +142,9 @@ If all tests pass, you’re good to go!
 
 Chroma works out-of-the-box. For more complex scenarios (e.g., custom labels, multiple color formats), refer to `src/lib.zig` and `src/ansi.zig` for detailed code comments that explain available options and their intended usage.
 
-## 📦 New in Version 0.15.1
+## 📦 Zig Compatibility
 
-- **Updated Compatibility:** Now aligned with Zig `0.15.1`.
-- **Improved Parser Logic:** More robust handling of multiple formats within the same placeholder.
-- **Better Testing:** Additional tests ensure extended color and true color formats behave as expected.
-- **Performance Tweaks:** Minor compile-time optimizations for faster builds.
+Chroma targets Zig 0.16.0. The minimum supported compiler is declared in `build.zig.zon`, and CI validates this version.
 
 ## 🤝 Contributing
 

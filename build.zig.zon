@@ -5,10 +5,8 @@
     .version = "0.1.2",
     .fingerprint = 0xfebb40f591910f74,
 
-    // This field is optional.
-    // This is currently advisory only; Zig does not yet do anything
-    // with this value.
-    .minimum_zig_version = "0.15.1",
+    // Tracks the earliest Zig version supported by this package.
+    .minimum_zig_version = "0.16.0",
 
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
