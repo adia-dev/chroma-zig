@@ -1,8 +1,11 @@
-/// Asserts the provided condition is true; if not, it triggers a compile-time error
-/// with the specified message. This utility function is designed to enforce
-/// invariants and ensure correctness throughout the codebase.
-pub fn compileAssert(ok: bool, msg: []const u8) void {
-    if (!ok) {
-        @compileError("Assertion failed: " ++ msg);
-    }
+const std = @import("std");
+
+/// Emit a consistently formatted compile-time parser diagnostic.
+pub fn failAt(comptime message: []const u8, comptime offset: usize) noreturn {
+    @compileError(std.fmt.comptimePrint("chroma: {s} at byte {d}", .{ message, offset }));
+}
+
+/// Emit a consistently formatted compile-time configuration diagnostic.
+pub fn failConfig(comptime message: []const u8) noreturn {
+    @compileError("chroma config: " ++ message);
 }

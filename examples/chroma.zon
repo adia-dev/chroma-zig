@@ -1,0 +1,51 @@
+.{
+    .syntax = .{
+        .marker = '@',
+        .item_separator = '|',
+        .value_separator = '=',
+        .channel_separator = '/',
+    },
+    .styles = .{
+        .{
+            .name = "brand",
+            .style = .{
+                .foreground = .{ .rgb = .{ .r = 142, .g = 110, .b = 255 } },
+                .effects = .{.bold},
+            },
+        },
+        .{
+            .name = "muted",
+            .style = .{
+                .foreground = .{ .bright = .black },
+                .effects = .{.italic},
+            },
+        },
+        .{
+            .name = "success",
+            .style = .{
+                .foreground = .{ .bright = .green },
+                .effects = .{.bold},
+            },
+        },
+        .{
+            .name = "warning",
+            .style = .{
+                .foreground = .{ .bright = .yellow },
+                .effects = .{.bold},
+            },
+        },
+        .{
+            .name = "failure",
+            .style = .{
+                .foreground = .{ .bright = .red },
+                .effects = .{.bold},
+            },
+        },
+        .{
+            .name = "label",
+            .style = .{
+                .foreground = .{ .bright = .cyan },
+            },
+        },
+    },
+}

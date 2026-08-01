@@ -1,0 +1,18 @@
+.{
+    .syntax = .{
+        .marker = '@',
+        .item_separator = '|',
+        .value_separator = '=',
+        .channel_separator = '/',
+    },
+    .styles = .{
+        .{
+            .name = "error",
+            .style = .{
+                .foreground = .{ .rgb = .{ .r = 220, .g = 50, .b = 47 } },
+                .background = .{ .bright = .yellow },
+                .effects = .{.bold},
+            },
+        },
+    },
+}

@@ -1,22 +1,7 @@
-/// The `AnsiCode` enum offers a comprehensive set of ANSI escape codes for both
-/// styling and coloring text in the terminal. This includes basic styles like bold
-/// and italic, foreground and background colors, and special modes like blinking or
-/// hidden text. It provides methods for obtaining the string name and the corresponding
-/// ANSI escape code of each color or style, enabling easy and readable text formatting.
-pub const AnsiCode = enum(u8) {
-    // Standard style codes
-    reset = 0,
-    bold,
-    dim,
-    italic,
-    underline,
-    ///Not widely supported
-    blink,
-    reverse = 7,
-    hidden,
-
-    // Standard text colors
-    black = 30,
+/// The eight portable ANSI colors. Brightness is represented separately so
+/// themes can express all sixteen foreground and background colors.
+pub const BasicColor = enum {
+    black,
     red,
     green,
     yellow,
@@ -24,62 +9,74 @@ pub const AnsiCode = enum(u8) {
     magenta,
     cyan,
     white,
+};
 
-    // Standard background colors
-    bgBlack = 40,
-    bgRed,
-    bgGreen,
-    bgYellow,
-    bgBlue,
-    bgMagenta,
-    bgCyan,
-    bgWhite,
+/// A 24-bit terminal color.
+pub const Rgb = struct {
+    /// Red channel.
+    r: u8,
+    /// Green channel.
+    g: u8,
+    /// Blue channel.
+    b: u8,
+};
 
-    /// Returns the string representation of the color.
-    /// This method makes it easy to identify a color by its name in the source code.
-    ///
-    /// Returns:
-    /// A slice of constant u8 bytes representing the color's name.
-    pub fn to_string(self: AnsiCode) []const u8 {
-        return @tagName(self);
+/// A foreground or background color supported by Chroma.
+pub const Color = union(enum) {
+    /// Restore the terminal's default foreground or background color.
+    default,
+    /// One of the eight standard ANSI colors.
+    basic: BasicColor,
+    /// One of the eight bright ANSI colors.
+    bright: BasicColor,
+    /// An entry in the ANSI 256-color palette.
+    indexed: u8,
+    /// A 24-bit true color.
+    rgb: Rgb,
+};
+
+/// Text effects which may be enabled by built-in directives or named styles.
+pub const Effect = enum(u3) {
+    bold,
+    dim,
+    italic,
+    underline,
+    blink,
+    reverse,
+    hidden,
+    strikethrough,
+
+    /// Return the SGR parameter which enables this effect.
+    pub fn enableCode(effect: Effect) u8 {
+        return switch (effect) {
+            .bold => 1,
+            .dim => 2,
+            .italic => 3,
+            .underline => 4,
+            .blink => 5,
+            .reverse => 7,
+            .hidden => 8,
+            .strikethrough => 9,
+        };
     }
 
-    /// Returns the ANSI escape code for the color as a string.
-    /// This method is used to apply the color to terminal output by embedding
-    /// the returned string into an output sequence.
-    ///
-    /// Returns:
-    /// A slice of constant u8 bytes representing the ANSI escape code for the color.
-    pub fn code(self: AnsiCode) []const u8 {
-        return switch (self) {
-            // Standard style codes
-            .reset => "0",
-            .bold => "1",
-            .dim => "2",
-            .italic => "3",
-            .underline => "4",
-            // Not widely supported
-            .blink => "5",
-            .reverse => "7",
-            .hidden => "8",
-            // foregroond colors
-            .black => "30",
-            .red => "31",
-            .green => "32",
-            .yellow => "33",
-            .blue => "34",
-            .magenta => "35",
-            .cyan => "36",
-            .white => "37",
-            // background colors
-            .bgBlack => "40",
-            .bgRed => "41",
-            .bgGreen => "42",
-            .bgYellow => "43",
-            .bgBlue => "44",
-            .bgMagenta => "45",
-            .bgCyan => "46",
-            .bgWhite => "47",
+    /// Return the SGR parameter which disables this effect.
+    pub fn disableCode(effect: Effect) u8 {
+        return switch (effect) {
+            .bold, .dim => 22,
+            .italic => 23,
+            .underline => 24,
+            .blink => 25,
+            .reverse => 27,
+            .hidden => 28,
+            .strikethrough => 29,
         };
     }
 };
+
+/// Return the standard SGR foreground or background parameter for a color.
+pub fn basicCode(color: BasicColor, bright: bool, background: bool) u8 {
+    const offset: u8 = @intFromEnum(color);
+    if (bright) return (if (background) 100 else 90) + offset;
+    return (if (background) 40 else 30) + offset;
+}
