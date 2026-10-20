@@ -10,6 +10,9 @@ sequences while leaving Zig fields such as `{s}` and `{d}` untouched. It is
 designed for colorful CLI tools, console applications, and logs without
 runtime parsing or allocation.
 
+**AI use:** AI-assisted. AI tools have assisted with development and maintenance;
+the maintainer reviews changes.
+
 ![Configurable Chroma theme rendered in a terminal](docs/assets/chroma-configurable.png)
 
 This image is captured from the real `zig build run` output and can be
